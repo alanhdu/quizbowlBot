@@ -1,0 +1,10 @@
+How to Run:
+    1. Edit quizbowl/settings.py
+        Edit TEMPLATE_DIRS to point to templates/ (use an absolute path)
+        Edit DATABASES NAME to point to database.db (use an absolute path)
+    2. Run bridge.py
+    3. python manage.py runserver
+
+Urls:
+    localhost:8000/play -- Version that needs bridge. Should automatically connect and start a match. The words are displayed through console.log for now.
+    

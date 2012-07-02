@@ -12,6 +12,8 @@ class Scheduler(object):
     t = None
     again = True
 
+    def clear(self):
+        events = []
     def addEvent(self, delay, func, args):
         self.events.append( (delay, func, args) )
     def run(self):
@@ -43,18 +45,21 @@ class Match(object):
         self.players.append(player)
 
     def startMatch(self, controller, callback=None):
-        callback.notify("Started!")
+        if callback != None:
+            callback.notify("Started!")
+
         self.controller = controller
         self.controller.startQuestion()
+
 
     def startQuestion(self, words, callback=None):
         self.questionText = words
         self.pos = 0
 
-        print self.players
-
         for player in self.players:
             player.onStartQuestion()
+
+        s.clear()
 
         for i in xrange(len(self.questionText)):
             s.addEvent(0.5, self.read, (callback,))
@@ -69,8 +74,15 @@ class Match(object):
         for player in self.players:
             player.onBuzz()
 
+    def correct(self, isCorrect):
+        if isCorrect:
+            self.controller.startQuestion()
+        else:
+            s.run()
+
     def answer(self, answerText, callback=None):
         self.controller.onAnswer(None, self.pos, answerText)
+        self.controller.isCorrect()
 
         if callback != None:
             callback.onAnswer("", answerText)
@@ -78,14 +90,10 @@ class Match(object):
         for player in self.players:
             player.onAnswer("", answerText)
 
-        if self.controller.isCorrect():
-            self.startQuestion()
-        else:
-            s.run()
-
     def read(self, callback=None):
         for player in self.players:
             player.onNewWord(self.questionText[self.pos]);
+
         self.pos += 1
 
 bridge = Bridge(api_key="60707403e0bf87e4")

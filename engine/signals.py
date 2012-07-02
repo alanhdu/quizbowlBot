@@ -22,7 +22,7 @@ def getBridge():
 def bridgeConnect(bridge):
     t = Thread(bridge.connect)
     t.start()
-    t.join(0.25)
+    t.join(0.2)
 
 class Controller(object):
     question = None
@@ -31,21 +31,31 @@ class Controller(object):
     def startQuestion(self):
         bridge = getBridge()
         match = bridge.get_service("match_22")
-        self.question = random.choice(Question.objects.all())
-        q = self.question.body.split()
-        print q
-        match.startQuestion(q)
 
+        self.question = random.choice(Question.objects.all())
+
+        while (len(self.question.correctAnswers.all()) == 0):
+            self.question = random.choice(Question.objects.all())
+
+        q = self.question.body.split()
+
+        match.startQuestion(q)
         bridgeConnect(bridge)
-        questionStarted.send(sender=self)
 
     def onAnswer(self, user, pos, answerText):
         self.answer = Answer.objects.create(body=answerText, user=None, numWords=pos, question=self.question)
         self.answer.correct()
 
-
     def isCorrect(self):
         print self.answer.isCorrect, self.answer.body
+
+        bridge = getBridge()
+        match = bridge.get_service("match_22")
+
+        match.correct(self.answer.isCorrect)
+
+        bridgeConnect(bridge)
+        
         return self.answer.isCorrect
 
 
@@ -55,6 +65,7 @@ class CallBack(object):
 
 @receiver(matchStarted)
 def startMatch(sender, **kwargs):
+    print "start"
     bridge = getBridge()
     c = Controller()
     match = bridge.get_service("match_22")

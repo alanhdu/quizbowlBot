@@ -11,34 +11,34 @@
 
     var listener = {
         onStartQuestion:function() {
-            question.innerHtml = "";
-            statusMessage.innerHtml = "";
+            question.innerHTML = "";
+            statusMessage.innerHTML = "";
         },
         onNewWord : function(word) {
-            console.log(question.innerHtml);
-            question.innerHtml += " " + word;
+            question.innerHTML += " " + word;
         },
         onBuzz : function(user) {
-            statusMessage.innerHtml = " buzzed in!";
+            statusMessage.innerHTML = " buzzed in!";
         },
         onAnswer : function(user, answer) {
-            statusMessage.innerHtml = user.username + " answered " + answer;
+            statusMessage.innerHTML = user.username + " answered " + answer;
         },
         onQuestionTimeout : function() {
-            statusMessage.innerHtml = "Time's up.";
+            statusMessage.innerHTML = "Time's up.";
         },
     }
 
     bridge.getService("match_22", function(match) {
         match.addPlayer(listener);
     });
+
     bridge.connect();
+
 
     function buzz() {
         bridge.getService("match_22", function(match) {
             match.buzz();
             var answer = prompt("Answer: ");
-
             match.answer(answer);
         });
     }

@@ -7,7 +7,6 @@ if __name__ == "__main__":
 from django.db import models
 from engine.models import *
 import random
-
 # Create your models here.
 class Bot():
     question = None
@@ -26,14 +25,17 @@ class RepeatBot(Bot):
         self.match = match
 
     def onStartQuestion(self):
+        print "Starting question"
         self.questionText = "" 
         self.answer = None
     def onNewWord(self, word):
         self.questionText += " " + word
+        print self.questionText
+
         if self.answer == None and Question.objects.filter(body__startswith=self.questionText).count() == 1:
             question = Question.objects.get(body__startswith=text)
             self.answer = random.choice(Answer.objects.filter(question=question))
-        elif answer != None and len(self.questionText.split()) == self.answer.numWords:
+        elif self.answer != None and len(self.questionText.split()) == self.answer.numWords:
             self.match.buzz()
             self.match.answer("", self.answer.body)
 
