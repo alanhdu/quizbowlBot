@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+
+{% block script %}
+<script type="text/javascript">
+    var count = 0;
+    var display = "{{ q.body }}".split(" ");
+
+    function displayQuestion() {
+        if (count < display.length) {
+            document.getElementById("question").innerHTML += " " + display[count];
+            count++;
+        }
+        else {
+            clearInterval();
+        }
+    }
+    
+    function buzz() {
+        var ans = prompt("Answer: ");
+
+        var form = document.createElement("form");
+        form.setAttribute("method", "POST");
+        form.setAttribute("action","{% url engine.views.random %}");
+
+        var answerField = document.createElement("input");
+        answerField.setAttribute("name", "answer");
+        answerField.setAttribute("value", ans);
+        form.appendChild(answerField);
+
+        var qidField = document.createElement("input");
+        qidField.setAttribute("name", "qid");
+        qidField.setAttribute("value", {{ q.id }});
+        form.appendChild(qidField);
+
+        var countField = document.createElement("input");
+        countField.setAttribute("name", "buzzTime");
+        countField.setAttribute("value", count);
+        form.appendChild(countField);
+
+        form.submit();
+    }
+
+    function setup() {
+        var s = document.getElementById("start");
+        var newButton = document.createElement("button");
+        var attr = document.createAttribute("onclick");
+        attr.nodeValue = "buzz();"
+
+        newButton.appendChild(document.createTextNode("Buzz"));
+        newButton.setAttributeNode(attr);
+
+        document.body.replaceChild(newButton, s);
+    }
+</script>
+{% endblock script %}
+
+{% block body %}
+<h1> Question #{{ q.id }} </h1>
+<h3> From {{ q.tournament }} </h3>
+<button id="start" onclick="setup();setInterval('displayQuestion()', 300);">
+    Press to Start
+</button>
+
+<p id="question"> </p>
+{% endblock body %}

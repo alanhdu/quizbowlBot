@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <link rel="stylesheet" href="" />
+        {% block title %} 
+        <title> Hello </title>
+        {% endblock %}
+
+        <script type="text/javascript">
+            function logout() {
+                window.location = "{% url engine.views.playerLogout %}";
+            }
+        </script>
+
+    </head>
+
+    <body>
+        <div class="nav"> 
+            {% if user.is_authenticated %}
+                <button onClick="logout()"> Log Out </button>
+            {% else %}
+                <li> Hello </li>
+            {% endif %}
+        </div>
+
+        {% block body %}
+        {% endblock %}
+
+        {% block script %}
+        {% endblock %}
+    </body>
+
+</html>
