@@ -32,10 +32,12 @@ class Controller(object):
         bridge = getBridge()
         match = bridge.get_service("match_22")
 
-        self.question = random.choice(Question.objects.all())
+        self.question = random.choice(Question.objects.filter(pk__lt=10))
+        #self.question = random.choice(Question.objects.all())
 
         while (len(self.question.correctAnswers.all()) == 0):
-            self.question = random.choice(Question.objects.all())
+            self.question = random.choice(Question.objects.filter(pk__lt=10))
+            #self.question = random.choice(Question.objects.all())
 
         q = self.question.body.split()
 

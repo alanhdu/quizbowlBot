@@ -40,6 +40,7 @@ class Match(object):
     pos = 0
     controller = None
     players = []
+    goNext = True
 
     def addPlayer(self, player):
         self.players.append(player)
@@ -53,6 +54,8 @@ class Match(object):
 
 
     def startQuestion(self, words, callback=None):
+        goNext = False
+        print "start question"
         self.questionText = words
         self.pos = 0
 
@@ -76,6 +79,7 @@ class Match(object):
 
     def correct(self, isCorrect):
         if isCorrect:
+            goNext = True
             self.controller.startQuestion()
         else:
             s.run()

@@ -29,20 +29,25 @@ class RepeatBot(Bot):
         self.questionText = "" 
         self.answer = None
     def onNewWord(self, word):
-        self.questionText += " " + word
-        print self.questionText
+        self.questionText += word + " "
 
-        if self.answer == None and Question.objects.filter(body__startswith=self.questionText).count() == 1:
-            question = Question.objects.get(body__startswith=text)
+        if self.answer == None and Question.objects.filter(body__contains=self.questionText).count() == 1:
+            question = Question.objects.get(body__contains=self.questionText)
             self.answer = random.choice(Answer.objects.filter(question=question))
+            print "Got answer!", self.answer.body, self.answer.numWords
         elif self.answer != None and len(self.questionText.split()) == self.answer.numWords:
+            print "Buzzing"
             self.match.buzz()
-            self.match.answer("", self.answer.body)
+            self.match.answer(self.answer.body)
 
     def consider(self):
         if Question.objects.filter(body__startswith=self.questionText).count() == 1:
             question = Question.objects.get(body__startswith=text)
             self.answer = random.choice(Answer.objects.filter(question=question))
+    def onAnswer(self, user, answer):
+        pass
+    def onBuzz(self, user):
+        pass
 
 from BridgePython import Bridge
 bridge = Bridge(api_key="60707403e0bf87e4")
