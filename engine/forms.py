@@ -1,4 +1,3 @@
-from django.forms import ModelForm
 from django.contrib.auth import authenticate
 from django import forms
 from engine.models import *
@@ -26,5 +25,3 @@ class loginForm(forms.Form):
                 raise forms.ValidationError("Username and password aren't correct")
                 
         return cleaned_data
-
-

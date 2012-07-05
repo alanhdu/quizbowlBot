@@ -1,9 +1,6 @@
-from django.core.signals import request_started
 from django.dispatch import receiver, Signal
-from django.shortcuts import redirect
 from BridgePython import Bridge
 from engine.models import *
-import engine.views
 import random
 import threading
 
@@ -35,13 +32,7 @@ class Controller(object):
         self.question = random.choice(Question.objects.filter(pk__lt=10))
         #self.question = random.choice(Question.objects.all())
 
-        while (len(self.question.correctAnswers.all()) == 0):
-            self.question = random.choice(Question.objects.filter(pk__lt=10))
-            #self.question = random.choice(Question.objects.all())
-
-        q = self.question.body.split()
-
-        match.startQuestion(q)
+        match.startQuestion(self.question.body.split())
         bridgeConnect(bridge)
 
     def onAnswer(self, user, pos, answerText):
@@ -53,13 +44,11 @@ class Controller(object):
 
         bridge = getBridge()
         match = bridge.get_service("match_22")
-
         match.correct(self.answer.isCorrect)
 
         bridgeConnect(bridge)
         
         return self.answer.isCorrect
-
 
 class CallBack(object):
     def notify(self, message):
@@ -67,10 +56,9 @@ class CallBack(object):
 
 @receiver(matchStarted)
 def startMatch(sender, **kwargs):
-    print "start"
     bridge = getBridge()
     c = Controller()
     match = bridge.get_service("match_22")
 
-    match.startMatch(c, CallBack())
+    match.connect(c)
     bridgeConnect(bridge)

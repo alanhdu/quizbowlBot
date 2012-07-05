@@ -1,7 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
 
-
 def stringDistance(a, b):
     a = " " + a
     b = " " + b

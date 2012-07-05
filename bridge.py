@@ -1,33 +1,31 @@
-import os
-if __name__ == "__main__":
-    os.environ.setdefault("DJANGO_SETTINGS_MODULE", "quizBowl.settings")
-
 from BridgePython import Bridge
-from engine.signals import *
+import Queue
 import threading
 import time
 
 class Scheduler(object):
-    events = []
+    events = Queue.Queue()
     t = None
     again = True
 
     def clear(self):
-        events = []
+        while not self.events.empty():
+            self.events.get()
     def addEvent(self, delay, func, args):
-        self.events.append( (delay, func, args) )
+        self.events.put( (delay, func, args) )
     def run(self):
         self.again = True
+
         self.t = threading.Timer(0, self.helper)
         self.t.start()
 
     def helper(self):
-        while self.again == True and len(self.events) > 0:
-            head = self.events[0]
-            del self.events[0]
+        if self.again and not self.events.empty():
+            head = self.events.get()
             head[1](*head[2])
 
-            time.sleep(head[0])
+            self.t = threading.Timer(head[0], self.helper)
+            self.t.start()
 
     def pause(self):
         self.t.cancel()
@@ -44,18 +42,16 @@ class Match(object):
 
     def addPlayer(self, player):
         self.players.append(player)
+        print "Added player"
 
-    def startMatch(self, controller, callback=None):
-        if callback != None:
-            callback.notify("Started!")
-
+    def connect(self, controller, callback=None):
         self.controller = controller
+    def startMatch(self):
         self.controller.startQuestion()
 
-
     def startQuestion(self, words, callback=None):
-        goNext = False
-        print "start question"
+        self.goNext = False
+
         self.questionText = words
         self.pos = 0
 
@@ -95,9 +91,9 @@ class Match(object):
             player.onAnswer("", answerText)
 
     def read(self, callback=None):
+        print self.questionText[self.pos]
         for player in self.players:
             player.onNewWord(self.questionText[self.pos]);
-
         self.pos += 1
 
 bridge = Bridge(api_key="60707403e0bf87e4")

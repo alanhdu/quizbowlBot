@@ -9,45 +9,61 @@ from engine.models import *
 import random
 # Create your models here.
 class Bot():
-    question = None
-
-    def consider(self, text):
-        pass
-    def buzz(self, answer):
-        print "Buzz! {0}".format(answer)
-
-class RepeatBot(Bot):
-    questionText = ""
-    answer = None
+    questionText = "" 
     match = None
+    users = {}
 
     def __init__(self, match):
         self.match = match
-
-    def onStartQuestion(self):
-        print "Starting question"
-        self.questionText = "" 
-        self.answer = None
-    def onNewWord(self, word):
-        self.questionText += word + " "
-
-        if self.answer == None and Question.objects.filter(body__contains=self.questionText).count() == 1:
-            question = Question.objects.get(body__contains=self.questionText)
-            self.answer = random.choice(Answer.objects.filter(question=question))
-            print "Got answer!", self.answer.body, self.answer.numWords
-        elif self.answer != None and len(self.questionText.split()) == self.answer.numWords:
-            print "Buzzing"
-            self.match.buzz()
-            self.match.answer(self.answer.body)
-
-    def consider(self):
-        if Question.objects.filter(body__startswith=self.questionText).count() == 1:
-            question = Question.objects.get(body__startswith=text)
-            self.answer = random.choice(Answer.objects.filter(question=question))
-    def onAnswer(self, user, answer):
+    def onChat(self, user, message):
         pass
+    def onSystemBroadcast(self, message):
+        pass
+    def onJoin(self, user):
+        self.users[user] = None
+    def onLeave(self, user):
+        del self.users[user]
+    def onStartQuestion(self):
+        self.questionText = "" 
     def onBuzz(self, user):
         pass
+    def onNewWord(self, word):
+        self.questionText += word + " "
+        self.consider()
+    def consider(self):
+        pass
+    def onUpdateScore(self, scores):
+        pass
+    def onAnswer(self, user, answer):
+        pass
+    def onQuestionTimeout(self):
+        pass
+    def onFinish(self):
+        pass
+    def onSit(self, user, team):
+        pass
+    def onCompleteQuestionI(self, question):
+        pass
+
+class RepeatBot(Bot):
+    answer = None
+
+    def onStartQuestion(self):
+        self.questionText = "" 
+        self.answer = None
+    def consider(self):
+        q = Question.objects.filter(body__contains=self.questionText)
+        if self.answer == None and q.count() == 1:
+            question = q.all()[0]
+            answers = Answer.objects.filter(question=question)
+            if (answers.count() > 0):
+                self.answer = random.choice(answers)
+                print "Got answer!", self.answer.body, self.answer.numWords
+        elif self.answer != None:
+            if len(self.questionText.split()) == self.answer.numWords:
+                print "Buzzing"
+                self.match.buzz()
+                self.match.answer(self.answer.body)
 
 from BridgePython import Bridge
 bridge = Bridge(api_key="60707403e0bf87e4")

@@ -1,13 +1,13 @@
-from django.http import HttpResponse, HttpResponseRedirect
+from django.http import HttpResponseRedirect
 from django.shortcuts import render_to_response, get_object_or_404, redirect
 from django.views.decorators.csrf import csrf_exempt
 from django.core.context_processors import csrf
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
+
 from engine.models import *
 from engine.forms import *
 from engine.signals import *
-import engine.views
 import random as r
 
 
@@ -40,7 +40,7 @@ def random(request):
 
         a.correct()
 
-    return redirect(engine.views.playQuestion, question_id=r.randint(0, 10000))
+    return redirect(playQuestion, question_id=r.randint(0, 10000))
 
 def createPlayer(request):
     if request.method == "POST":

@@ -2,9 +2,34 @@ How to Run:
     1. Edit quizbowl/settings.py
         Edit TEMPLATE_DIRS to point to templates/ (use an absolute path)
         Edit DATABASES NAME to point to database.db (use an absolute path)
-    2. Run bridge.py
-    3. python manage.py runserver
+    2. python manage.py runserver
+    3. python bridge.py
+    4. (Optional) python bot.py
+    5. Go to localhost:8000/play
 
 Urls:
     localhost:8000/play -- Version that needs bridge. Should automatically connect and start a match. The words are displayed through console.log for now.
-    
+    localhost:8000/question/{questionId} -- displays the question w/ the que
+    localhost:8000/question/play -- Non-bridge, non-bot version.
+
+File Descriptions:
+    bots.py -- Contains the automated bots. Only has a base class and a Repeat Bot for now
+    bridge.py -- Brings up a bridge server to allow django to communicate with the bot and the player
+    database.db -- Database that django uses
+    manage.py -- Used for managing the django server. python manage.py -help for more info
+    move.py -- Scripts to move information from questions.db to database.db
+    questions.db -- Original database
+
+    engine/ -- Handles most of the django stuff
+        forms.py -- has forms for login and for creating players
+        models.py -- Stores the models for django,has forms for login and for creating players
+        models.py -- Stores the models for django, 
+        __init__.py -- Not sure what it does, but needed, or django will complain
+        signals.py -- handles the bridge-django connections
+        views.py -- Handles what the user sees
+    quizbowl/ -- Django internal engine stuff
+        __init__.py -- Not sure what it's for, but needs to be there
+        settings.py -- Holds the settings. There's a lot of unnecessary things there that I haven't cleaned up yet
+        urls.py -- Contains a list of what urls use what view
+
+    templates/ -- Templates that the views use
