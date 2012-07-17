@@ -68,10 +68,10 @@ class Match(object):
         s.pause()
 
         if callback != None:
-            callback.onBuzz()
+            callback.onBuzz("")
 
         for player in self.players:
-            player.onBuzz()
+            player.onBuzz("")
 
     def correct(self, isCorrect):
         if isCorrect:

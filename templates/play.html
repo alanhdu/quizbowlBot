@@ -36,10 +36,7 @@
     bridge.connect();
 
     function buzz() {
-        listener.onNewWord("Help");
-
         bridge.getService("match_22", function(match) {
-            alert("Goodbye");
             match.buzz();
             var answer = prompt("Answer: ");
             match.answer(answer);

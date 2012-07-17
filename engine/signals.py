@@ -10,6 +10,7 @@ class Thread(threading.Thread):
     def __init__(self, func):
         threading.Thread.__init__(self)
         self.func = func
+        self.daemon = True
     def run(self):
         self.func()
 
@@ -19,7 +20,6 @@ def getBridge():
 def bridgeConnect(bridge):
     t = Thread(bridge.connect)
     t.start()
-    t.join(0.2)
 
 class Controller(object):
     question = None

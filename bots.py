@@ -42,7 +42,7 @@ class Bot():
         pass
     def onSit(self, user, team):
         pass
-    def onCompleteQuestionI(self, question):
+    def onCompleteQuestion(self, question):
         pass
 
 class RepeatBot(Bot):
