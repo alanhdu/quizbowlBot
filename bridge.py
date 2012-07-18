@@ -38,7 +38,7 @@ class Match(object):
     pos = 0
     controller = None
     players = []
-    goNext = True
+    isAsking = False
 
     def addPlayer(self, player):
         self.players.append(player)
@@ -47,22 +47,23 @@ class Match(object):
     def connect(self, controller, callback=None):
         self.controller = controller
     def startMatch(self):
-        self.controller.startQuestion()
+        self.controller.startQuestion() 
+        # gets a random question and calls self.startQuestion() with it
 
     def startQuestion(self, words, callback=None):
-        self.goNext = False
+        if self.isAsking == False:
+            self.isAsking = True
+            self.questionText = words
+            self.pos = 0
 
-        self.questionText = words
-        self.pos = 0
+            for player in self.players:
+                player.onStartQuestion()
 
-        for player in self.players:
-            player.onStartQuestion()
+            s.clear()
 
-        s.clear()
-
-        for i in xrange(len(self.questionText)):
-            s.addEvent(0.5, self.read, (callback,))
-        s.run()
+            for i in xrange(len(self.questionText)):
+                s.addEvent(0.5, self.read, (callback,))
+            s.run()
 
     def buzz(self, callback=None):
         s.pause()
@@ -75,14 +76,14 @@ class Match(object):
 
     def correct(self, isCorrect):
         if isCorrect:
-            goNext = True
+            self.isAsking = False
             self.controller.startQuestion()
         else:
             s.run()
 
     def answer(self, answerText, callback=None):
-        self.controller.onAnswer(None, self.pos, answerText)
-        self.controller.isCorrect()
+        self.controller.onAnswer(None, self.pos, answerText) # enters answer into django database
+        self.controller.isCorrect() # calls self.correct()
 
         if callback != None:
             callback.onAnswer("", answerText)

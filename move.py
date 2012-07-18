@@ -9,37 +9,56 @@ def loadQuestions(fout, c):
             print "Problem w/", row[0]
     fout.write("\n".join(l))
 
-def loadCorrectAnswers(fout, c):
-    l = []
+def loadLabels(fout1, fout2, c):
+    l1 = []
+    l2 = []
     i = 0
+    j = 0
 
     mapping = {}
-    for (qid, aid) in c.execute("select * from question_mapping"):
-        if aid in mapping:
-            mapping[aid].append(qid)
-        else:
-            mapping[aid] = [qid]
 
     for (aid, text) in c.execute("select answer_id, answer_text from cannonical_answer"):
-        for qid in mapping[aid]:
-            try:
-                l.append("|".join([str(i), str(qid), str(text)]))
-                i += 1
-            except UnicodeEncodeError:
-                pass
-
-    for (qid, text) in c.execute("select question_id, answer_text from answers where is_reference=1"):
         try:
-            l.append("|".join([str(i), str(qid), str(text)]))
-            i += 1
+            l1.append("|".join([str(aid), str(text)]))
         except UnicodeEncodeError:
             pass
 
-    fout.write("\n".join(l))
+        if aid > i:
+            i = aid
+            print i
 
-fout = open("correctAnswers.csv", "w")
+    for (text, qid) in c.execute("select answer_text, question_id from answers where is_reference=1"):
+        i += 1
+        try:
+            l1.append("|".join([str(i), str(text)]))
+        except UnicodeEncodeError:
+            pass
+
+        if qid in mapping:
+            mapping[qid].append(i)
+        else:
+            mapping[qid] = [i]
+
+
+    for (qid, aid) in c.execute("select question_id, answer_id from question_mapping"):
+        if qid in mapping:
+            mapping[qid].append(aid)
+        else:
+            mapping[qid] = [aid]
+
+    for qid in mapping:
+        for aid in mapping[qid]:
+            j += 1
+            l2.append("|".join([str(j), str(aid), str(qid)]))
+
+    fout1.write("\n".join(l1))
+    fout2.write("\n".join(l2))
+
+fout1 = open("labels.csv", "w")
+fout2 = open("mapping.csv", "w")
 conn1 = sqlite3.connect("questions.db")
 c1 = conn1.cursor()
 
-loadCorrectAnswers(fout, c1)
-fout.close()
+loadLabels(fout1, fout2, c1)
+fout1.close()
+fout2.close()

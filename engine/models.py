@@ -42,7 +42,7 @@ class Answer(models.Model):
     def correct(self):
         self.body = self.body.strip()
         texts = [correctAnswer.body
-                 for correctAnswer in self.question.correctAnswers.all()]
+                 for correctAnswer in self.question.labels.all()]
 
         distances =[stringDistance(body, self.body)
                     for body in texts]
@@ -56,6 +56,6 @@ class Answer(models.Model):
 
         self.save()
 
-class CorrectAnswer(models.Model):
-    question = models.ForeignKey(Question, related_name="correctAnswers")
+class Label(models.Model):
+    questions = models.ManyToManyField(Question, related_name="labels")
     body = models.TextField()

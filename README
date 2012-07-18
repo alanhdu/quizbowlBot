@@ -7,6 +7,11 @@ How to Run:
     4. (Optional) python bot.py
     5. Go to localhost:8000/play
 
+Prerequisites:
+    1. Bridge
+    2. Django
+    3. Python Tornado Webserver
+
 Urls:
     localhost:8000/play -- Version that needs bridge. Should automatically connect and start a match. The words are displayed through console.log for now.
     localhost:8000/question/{questionId} -- displays the question w/ the que
