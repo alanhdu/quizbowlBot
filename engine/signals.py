@@ -15,7 +15,7 @@ class Thread(threading.Thread):
         self.func()
 
 def getBridge():
-    return Bridge(api_key = "60707403e0bf87e4")
+    return Bridge(api_key = "43437a325d1bd02b")
 
 def bridgeConnect(bridge):
     t = Thread(bridge.connect)
@@ -60,5 +60,6 @@ def startMatch(sender, **kwargs):
     c = Controller()
     match = bridge.get_service("match_22")
 
+    print "Connecting to bridge"
     match.connect(c)
     bridgeConnect(bridge)

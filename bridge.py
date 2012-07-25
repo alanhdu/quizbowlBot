@@ -45,6 +45,7 @@ class Match(object):
         print "Added player"
 
     def connect(self, controller, callback=None):
+        print "Bridge connected"
         self.controller = controller
     def startMatch(self):
         self.controller.startQuestion() 
@@ -97,6 +98,6 @@ class Match(object):
             player.onNewWord(self.questionText[self.pos]);
         self.pos += 1
 
-bridge = Bridge(api_key="60707403e0bf87e4")
+bridge = Bridge(api_key="43437a325d1bd02b")
 bridge.publish_service("match_22", Match())
 bridge.connect()

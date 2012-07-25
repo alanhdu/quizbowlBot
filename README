@@ -29,11 +29,9 @@ File Descriptions:
         forms.py -- has forms for login and for creating players
         models.py -- Stores the models for django,has forms for login and for creating players
         models.py -- Stores the models for django, 
-        __init__.py -- Not sure what it does, but needed, or django will complain
         signals.py -- handles the bridge-django connections
         views.py -- Handles what the user sees
     quizbowl/ -- Django internal engine stuff
-        __init__.py -- Not sure what it's for, but needs to be there
         settings.py -- Holds the settings. There's a lot of unnecessary things there that I haven't cleaned up yet
         urls.py -- Contains a list of what urls use what view
 
