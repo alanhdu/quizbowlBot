@@ -29,8 +29,7 @@ class UserProfile(models.Model):
 class Question(models.Model):
     body = models.TextField()
     category = models.TextField()
-    author = models.TextField()
-    tournament = models.TextField()
+    label = models.ForeignKey("Label", related_name="questions")
 
 class Answer(models.Model):
     user = models.ForeignKey(User, null=True)
@@ -57,5 +56,4 @@ class Answer(models.Model):
         self.save()
 
 class Label(models.Model):
-    questions = models.ManyToManyField(Question, related_name="labels")
     body = models.TextField()
