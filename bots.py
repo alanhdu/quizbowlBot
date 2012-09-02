@@ -201,8 +201,11 @@ class TrainedBot(Bot):
 
 def getBot():
     f = open("pickledBot.data")
-    bot = pickle.load(f)
+    features = pickle.load(f)
     f.close()
+
+    bot = TrainedBot(None)
+    bot.features = features
 
     return bot
 
@@ -235,18 +238,14 @@ def allQuestions(bot):
 
 
 if __name__ == "__main__":
+    bot = getBot()
+    """
     bot = TrainedBot(None)
-    #bot.downloadDocuments()
     bot.loadDocuments()
     bot.train()
 
-    """
     f = open("pickledBot.data", "w")
     pickle.dump(bot.features, f)
-    f.close()
-
-    f = open("pickledBot.data")
-    bot = pickle.load(f)
     f.close()
     """
 

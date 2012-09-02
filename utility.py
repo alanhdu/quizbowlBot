@@ -1,43 +1,43 @@
 from __future__ import division
 
-import os
 import re
 import urllib
 import xml.dom.minidom
 import unicodedata
 import collections
 import StringIO
-import itertools
-from collections import defaultdict
 from nltk.tokenize import word_tokenize, sent_tokenize, PunktWordTokenizer
 from nltk.probability import *
 from nltk.util import ingrams
 import nltk.model
 from math import log, exp
 from engine.models import *
+import functools
 
-class CondProbDist(ConditionalProbDistI):
-    def __init__(self, cfdist, probdistFactory, *args, **kwargs):
-        l = lambda: probdistFactory(FreqDist(), *args, **kwargs)
-        collections.defaultdict.__init__(self, l) 
-        for condition in cfdist:
-            self[condition] = probdistFactory(cfdist[condition], *args, **kwargs)
-        
+def defaultFactory(probdist, *args, **kwargs):
+    return probdist(FreqDist(), *args, **kwargs)
 
-class NGramModel(nltk.model.NgramModel):
+
+def CondProbDist(cfdist, probdistFactory, *args, **kwargs):
+    l = functools.partial(defaultFactory, probdistFactory, *args, **kwargs)
+    d = collections.defaultdict(l)
+    for condition in cfdist:
+        d[condition] = probdistFactory(cfdist[condition], *args, **kwargs)
+
+    return d
+
+class NGramModel():
     def __init__(self, n):
-        self._n = n
-        self._lpad = ()
-        self._rpad = ()
-        self._ngrams = set()
-        self._backoff = None
+        self.n = n
+        self.ngrams = set()
+        self.backoff = None
 
     @classmethod
     def fromWords(cls, n, trainingText, estimator, docCount, numDoc):
         model = cls(n)
 
         if n > 1:
-            model._backoff = NGramModel.fromWords(n-1, trainingText, estimator,
+            model.backoff = NGramModel.fromWords(n-1, trainingText, estimator,
                                                   docCount, numDoc)
         else:
             model._backoff = None
