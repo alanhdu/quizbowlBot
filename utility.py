@@ -14,112 +14,100 @@ from math import log, exp
 from engine.models import *
 import functools
 
-def defaultFactory(probdist, *args, **kwargs):
-    return probdist(FreqDist(), *args, **kwargs)
+class WordDist(dict):
+    freq = None
+    _n = None
+    _b = None
+    bins = None
+    def __init__(self, collection=None, bins = None):
+        self.freq = collections.defaultdict(int)
+        if collection is not None:
+            for i in collection:
+                self[i] += 1
+            self._n = len(collection)
+        else:
+            self._n = 0
 
-
-def CondProbDist(cfdist, probdistFactory, *args, **kwargs):
-    l = functools.partial(defaultFactory, probdistFactory, *args, **kwargs)
-    d = collections.defaultdict(l)
-    for condition in cfdist:
-        d[condition] = probdistFactory(cfdist[condition], *args, **kwargs)
-
-    return d
+        self._b = len(self.freq)
+        self.bins = bins
+    def update(self, collection):
+        for i in collection:
+            self[i] += 1
+        self._n += len(collection)
+        self._b = len(self.freq)
+    def pop(self, item):
+        self._n -= self[item]
+        del self[item]
+    def prob(self, token):
+        if token in self:
+            return self[token] / (self._n + self._b)
+        else:
+            return self._b / ((self.bins - self._b) * (self._n + self._b))
+    def __getitem__(self, token):
+        return self.freq[token]
+        #if token not in self:
+        #    self[token] = 0
+        #return self.get(token)
 
 class NGramModel():
-    def __init__(self, n):
+    model = None 
+    n = 0
+
+    def __init__(self, n, text, docCount, numDoc):
         self.n = n
-        self.ngrams = set()
-        self.backoff = None
+        self.model = []
 
-    @classmethod
-    def fromWords(cls, n, trainingText, estimator, docCount, numDoc):
-        model = cls(n)
+        unigrams = WordDist(wordParse(text))
+        wordFilter(docCount[1], numDoc, unigrams)
 
-        if n > 1:
-            model.backoff = NGramModel.fromWords(n-1, trainingText, estimator,
-                                                  docCount, numDoc)
-        else:
-            model._backoff = None
+        for i in xrange(n, 1, -1):
+            ngrams = ngramFinder(text, i)
+            cwd = collections.defaultdict(functools.partial(WordDist, None, len(docCount[i])))
 
-        cfd = ConditionalFreqDist()
-        ngrams = ngramFinder(trainingText, n)
+            for ngram in ngrams:
+                rare = docCount[i][ngram] / numDoc < 0.8 / 4**(i-1)
+                important = any(word in unigrams for word in ngram)
+                if rare and important:
+                    context = tuple(ngram[:-1])
+                    token = ngram[-1]
+                    cwd[context][token] += 1
 
-        unigrams = [a for a, in model.getUnigram()._ngrams]
-        for ngram in ngrams:
-            include = docCount[n][ngram] / numDoc < 0.8 / 4**(n-1)
-            if n > 1:
-                include = include and any(word in unigrams for word in ngram)
-            if include:
-                context = tuple(ngram[:-1])
-                token = ngram[-1]
-                cfd[context].inc(token)
+            for context in cwd.keys():
+                wordFilter(docCount[n], numDoc, cwd[context], context)
 
-        for context in cfd.conditions():
-            wordFilter(docCount[n], numDoc, cfd[context], context)
+            self.model.append(cwd)
 
-        for ngram in set(ngrams):
-            context = tuple(ngram[:-1])
-            token = ngram[-1]
-            if token in cfd[context]:
-                model._ngrams.add(ngram)
+        cwd = collections.defaultdict(functools.partial(WordDist, None, len(docCount[1])))
+        cwd[()] = unigrams
+        self.model.append(cwd)
 
-        model._model = CondProbDist(cfd, estimator, docCount[n].B())
-
-        return model
-
-    @classmethod
-    def fromCondFreq(cls, n, condFreq, estimator, bins):
-        model = cls(n)
-        model._model = CondProbDist(condFreq, estimator, bins)
-        model._backoff = None
-        model._ngrams = set(model._model[()].freqdist().samples())
-
-        return model
-    
-    def getUnigram(self):
-        t = self
-        while t._n > 1:
-            t = t._backoff
-        return t
-    
     def prob(self, word, context):
-        if self._n > 1:
-            context = tuple(context[1-self._n:])
-        else:
-            context = ()
+        prob = None
+        for model in self.model[::-1]:
+            if prob is None:
+                prob = 0.5 * model[context].prob(word)
+            else:
+                prob = 0.5 * prob + model[context].prob(word)
+        return prob
 
-        if self._backoff is None:
-            return 0.5 * self[context].prob(word)
-        else:
-            prob = self[context].prob(word) + self._backoff.prob(word, context)
-            return prob * 0.5
-
-    def addBackoff(self, freq, estimator, bins):
-        t = self
-
-        while t._backoff != None:
-            t = t._backoff
-
-        condFreq = ConditionalFreqDist()
+    def addBackoff(self, freq, bins):
+        condFreq = collections.defaultdict(functools.partial(WordDist, None, bins))
         condFreq[()] = freq
-
-        t._backoff = NGramModel.fromCondFreq(1, condFreq, estimator, bins)
+        self.model.append(condFreq)
 
     def __repr__(self):
-        return "<NGramModel with %d %d-grams>" % (len(self._ngrams), self._n)
+        return "<NGramModel with %d-grams>" % (self.n)
 
-def wordFilter(docCount, numDoc, freqdist, context=None, tfidfLimit=0.3):
-    for word in freqdist.samples():
+def wordFilter(docCount, numDoc, worddist, context=None, tfidfLimit=0.3):
+    for word in worddist.keys():
         if context:
             tfidf = log(numDoc / docCount[context + (word, )])
         else:
             tfidf = log(numDoc / docCount[word])
-        tfidf *= freqdist[word]
+        tfidf *= worddist[word]
 
         if tfidf < tfidfLimit:
-            freqdist[word] = 1
-            freqdist.pop(word)
+            worddist.pop(word)
 
 _wordNormalize = re.compile(r"[^\w -]*")
 def wordNormalize(word):

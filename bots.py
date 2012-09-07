@@ -131,14 +131,14 @@ class TrainedBot(Bot):
 
     def train(self):
         # Maybe some stemming later?
-        docCount = {1:FreqDist(), 2:FreqDist()}
+        docCount = {1:collections.Counter(), 2:collections.Counter()}
 
         for text in self.documents.itervalues():
             docCount[1].update(set(utility.wordParse(text)))
             docCount[2].update(set(utility.ngramFinder(text, 2)))
         print "Got doc count"
 
-        categoryCount = FreqDist()
+        categoryCount = collections.Counter()
         categoryWords = collections.defaultdict(list)
         for q in Question.objects.filter(id__lt=1000).iterator():
             words = utility.wordParse(q.body)
@@ -153,21 +153,17 @@ class TrainedBot(Bot):
             categoryCount.update(set(categoryWords[category]))
 
         for category, words in categoryWords.items():
-            categoryWords[category] = FreqDist(words)
+            categoryWords[category] = collections.Counter(words)
             utility.wordFilter(categoryCount, len(categoryWords), 
                                categoryWords[category])
         print "Trained Category"
 
         for label in self.documents:
-            est = WittenBellProbDist
-            self.features[label] = NGramModel.fromWords(2, 
-                                                        self.documents[label],
-                                                        est, docCount,
-                                                        len(self.documents))
+            self.features[label] = NGramModel(2, self.documents[label],
+                                              docCount, len(self.documents))
             l = Label.objects.get(body=label)
-            category = l.questions.all()[0].category
-            self.features[label].addBackoff(categoryWords[q.category], est, 
-                                            categoryBins)
+            #self.features[label].addBackoff(categoryWords[l.category],
+            #                                categoryBins)
         print "Trained Wikipedia"
 
     def loadDocuments(self):
@@ -238,11 +234,12 @@ def allQuestions(bot):
 
 
 if __name__ == "__main__":
-    bot = getBot()
-    """
-    bot = TrainedBot(None)
+    #bot = getBot()
+    
+    bot = TrainedBot(None)  # 3.8 million
     bot.loadDocuments()
     bot.train()
+    """
 
     f = open("pickledBot.data", "w")
     pickle.dump(bot.features, f)
