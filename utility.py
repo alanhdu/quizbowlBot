@@ -4,15 +4,27 @@ import re
 import urllib
 import xml.dom.minidom
 import unicodedata
-import collections
-import StringIO
-from nltk.tokenize import word_tokenize, sent_tokenize, PunktWordTokenizer
+from nltk.tokenize import sent_tokenize, PunktWordTokenizer
 from nltk.probability import *
-from nltk.util import ingrams
-import nltk.model
-from math import log, exp
+from math import log
 from engine.models import *
 import functools
+import collections
+
+class Counter(dict):
+    def __init__(self, iterator=None):
+        if iterator != None:
+            for obj in iterator:
+                self[obj] += 1
+    def __getitem__(self, key):
+        if key in self:
+            return self.get(key)
+        else:
+            self[key] = 0
+            return self.get(key)
+    def update(self, iterator):
+        for obj in iterator:
+            self[obj] += 1
 
 class WordDist(dict):
     freq = None
@@ -45,9 +57,6 @@ class WordDist(dict):
             return self._b / ((self.bins - self._b) * (self._n + self._b))
     def __getitem__(self, token):
         return self.freq[token]
-        #if token not in self:
-        #    self[token] = 0
-        #return self.get(token)
 
 class NGramModel():
     model = None 
