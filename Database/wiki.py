@@ -2,16 +2,12 @@ import re
 import urllib
 import unicodedata
 import xml.dom.minidom
-import sys
 import os
-# Take care of relative imports
-_p, _name = os.path.split(sys.path[0])
-sys.path.insert(0, _p)
 
 # Allow Django imports
 if __name__ == "__main__":
-    os.environ.setdefault("DJANGO_SETTINGS_MODULE", "Database.quizBowl.importSettings")
-from Database.engine.models import *
+    os.environ.setdefault("DJANGO_SETTINGS_MODULE", "quizBowl.settings")
+from engine.models import *
 
 def getWikipedia(title):
     try:
@@ -22,7 +18,7 @@ def getWikipedia(title):
     url = u"http://en.wikipedia.org/w/index.php?action=raw&title={0}".format(title)
 
     title = title.encode('utf-8')
-    if os.path.exists("wiki/{0}".format(title)):
+    if os.path.exists("wiki/{0}".format(title.replace(" ", "_")):
         return (title, "", 1)
 
     text = urllib.urlopen(url.encode("utf-8")).read()

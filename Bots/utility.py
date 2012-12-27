@@ -24,6 +24,8 @@ class Counter(dict):
     def update(self, iterator):
         for obj in iterator:
             self[obj] += 1
+    def total(self):
+        return sum(self.values())
     def __str__(self):
         return "Counter"
     def __repr__(self):

@@ -1,9 +1,8 @@
 How to Run:
-    1. Edit quizbowl/settings.py
+    1. Edit Database/quizbowl/settings.py and Database/quizbowl/importSettings.py
         Change TEMPLATE_DIRS to point to templates/ (use an absolute path)
         Change DATABASES NAME to point to database.db (use an absolute path)
-    2. python manage.py runserver
-    3. python bridge.py
+    2. python bridge.py
     4. (Optional) python bot.py
     5. Go to localhost:8000/play
 
@@ -11,6 +10,7 @@ Prerequisites:
     1. Bridge
     2. Django
     3. Python Tornado Webserver
+    4. nltk
 
 Urls:
     localhost:8000/play -- Version that needs bridge. Should automatically connect and start a match. The words are displayed through console.log for now.
